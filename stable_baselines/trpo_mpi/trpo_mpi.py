@@ -325,7 +325,8 @@ class TRPO(ActorCriticRLModel):
                         # ob, ac, atarg, ret, td1ret = map(np.concatenate, (obs, acs, atargs, rets, td1rets))
                         observation, action, atarg, tdlamret = seg["ob"], seg["ac"], seg["adv"], seg["tdlamret"]
                         vpredbefore = seg["vpred"]  # predicted value function before update
-                        atarg = (atarg - atarg.mean()) / atarg.std()  # standardized advantage function estimate
+                        atarg = (atarg - atarg.mean()) / (atarg.std() + np.finfo(np.float32).eps)  # standardized advantage function estimate
+                        # atarg = (atarg - atarg.mean()) / atarg.std()  # standardized advantage function estimate
 
                         # true_rew is the reward without discount
                         if writer is not None:
@@ -410,9 +411,9 @@ class TRPO(ActorCriticRLModel):
                                                                          shuffle=True):
                                     grad = self.allmean(self.compute_vflossandgrad(mbob, mbob, mbret, sess=self.sess))
                                     self.vfadam.update(grad, self.vf_stepsize)
-
-                    for (loss_name, loss_val) in zip(self.loss_names, mean_losses):
-                        logger.record_tabular(loss_name, loss_val)
+                    if not np.allclose(grad, 0):
+                        for (loss_name, loss_val) in zip(self.loss_names, mean_losses):
+                            logger.record_tabular(loss_name, loss_val)
 
                     logger.record_tabular("explained_variance_tdlam_before",
                                           explained_variance(vpredbefore, tdlamret))
