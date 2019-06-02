@@ -534,10 +534,10 @@ class ActorCriticRLModel(BaseRLModel):
             # normalize action proba shape for the different gym spaces
             actions_proba = actions_proba.reshape((-1, 1))
 
-        if not vectorized_env:
-            if state is not None:
-                raise ValueError("Error: The environment must be vectorized when using recurrent policies.")
-            actions_proba = actions_proba[0]
+        # if not vectorized_env:
+        #     if state is not None:
+        #         raise ValueError("Error: The environment must be vectorized when using recurrent policies.")
+        #     actions_proba = actions_proba[0]
 
         return actions_proba
 
